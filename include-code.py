@@ -46,7 +46,7 @@ def include_code(key, value, fmt, meta):
 
     if include and snippet:
       src = read_snippet(include, snippet)
-      return CodeBlock([ident, classes, keyvals], '\n' + src)
+      return CodeBlock([ident, classes, keyvals], src)
 
 if __name__ == "__main__":
   toJSONFilter(include_code)
