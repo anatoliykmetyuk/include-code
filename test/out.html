@@ -1,0 +1,48 @@
+<h1 id="hello">Hello</h1>
+<div class="sourceCode" include="code.scala"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> cats._, cats.<span class="fu">implicits</span>._, cats.<span class="fu">data</span>._, cats.<span class="fu">effect</span>._
+
+<span class="co">// start snippet outer</span>
+<span class="kw">object</span> Main {
+  <span class="co">// start snippet inner</span>
+  <span class="kw">def</span> <span class="fu">main</span>(args: Array[String]): Unit = {
+
+    <span class="fu">println</span>(<span class="st">&quot;Hello World&quot;</span>)    
+
+  }
+  <span class="co">// end snippet inner</span>
+}
+<span class="co">// end snippet outer</span>
+
+  <span class="co">// start snippet RichWrappers</span>
+  <span class="kw">implicit</span> <span class="kw">def</span> showExn: Show[Throwable] = Show.<span class="fu">show</span>[Throwable] { e =&gt;
+    s<span class="st">&quot;${e.getMessage}</span><span class="ch">\n</span><span class="st">${e.getStackTrace.mkString(&quot;</span>\n<span class="st">&quot;)}&quot;</span>
+  }
+
+  <span class="kw">implicit</span> <span class="kw">class</span> RichEither[E: Show, A](x: Either[E, A]) {
+    <span class="kw">def</span> etr: Ef[A] = EitherT.<span class="fu">fromEither</span>[IO](x).<span class="fu">leftMap</span>(_.<span class="fu">show</span>)
+  }
+
+  <span class="kw">implicit</span> <span class="kw">class</span> RichDelayed[A](x: =&gt; A) {
+    <span class="kw">def</span> sus: Ef[A] = EitherT.<span class="fu">right</span>[String](IO { x })
+    <span class="kw">def</span> exn: Ef[A] = <span class="fu">Try</span>(x).<span class="fu">toEither</span>.<span class="fu">etr</span>
+  }
+  <span class="co">// end snippet RichWrappers</span></code></pre></div>
+<h2 id="outer">Outer</h2>
+<div class="sourceCode" include="code.scala" snippet="outer" ignore-other-snippets="true"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> Main {
+  <span class="kw">def</span> <span class="fu">main</span>(args: Array[String]): Unit = {
+
+    <span class="fu">println</span>(<span class="st">&quot;Hello World&quot;</span>)    
+
+  }
+}</code></pre></div>
+<h2 id="rich-wrappers">Rich Wrappers</h2>
+<div class="sourceCode" include="code.scala" snippet="RichWrappers"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> showExn: Show[Throwable] = Show.<span class="fu">show</span>[Throwable] { e =&gt;
+  s<span class="st">&quot;${e.getMessage}</span><span class="ch">\n</span><span class="st">${e.getStackTrace.mkString(&quot;</span>\n<span class="st">&quot;)}&quot;</span>
+}
+<span class="kw">implicit</span> <span class="kw">class</span> RichEither[E: Show, A](x: Either[E, A]) {
+  <span class="kw">def</span> etr: Ef[A] = EitherT.<span class="fu">fromEither</span>[IO](x).<span class="fu">leftMap</span>(_.<span class="fu">show</span>)
+}
+<span class="kw">implicit</span> <span class="kw">class</span> RichDelayed[A](x: =&gt; A) {
+  <span class="kw">def</span> sus: Ef[A] = EitherT.<span class="fu">right</span>[String](IO { x })
+  <span class="kw">def</span> exn: Ef[A] = <span class="fu">Try</span>(x).<span class="fu">toEither</span>.<span class="fu">etr</span>
+}</code></pre></div>

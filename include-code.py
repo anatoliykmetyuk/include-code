@@ -17,17 +17,25 @@ def log(txt):
   out.flush()
   out.close()
 
-def read_snippet(file, snippet_name, dedent = 3):
+def read_snippet(file, snippet_name = None, ignore_other = False, dedent = 3):
   f = open(file, 'r')
   lines = []
   start_from = None
+
+  def append_line(l):
+    if not (ignore_other and (
+      'start snippet' in l or 'end snippet' in l)): lines.append(l)
+
   for l in f:
-    if 'end snippet ' + snippet_name in l: start_from = None
-    
-    if start_from: lines.append(l[start_from-dedent:])
-    
-    idx = l.find('start snippet ' + snippet_name)
-    if idx >= 0: start_from = idx
+    if snippet_name:
+      if 'end snippet ' + snippet_name in l: start_from = None
+      
+      if start_from: append_line(l[start_from-dedent:])
+      
+      idx = l.find('start snippet ' + snippet_name)
+      if idx >= 0: start_from = idx
+    else:
+      append_line(l)
 
   f.close()
   return ''.join(lines)
@@ -41,11 +49,13 @@ def include_code(key, value, fmt, meta):
   if key == 'CodeBlock':
     [[ident, classes, keyvals], code] = value
     kvs = to_dict(keyvals)
-    include = kvs.get("include")
-    snippet = kvs.get("snippet")
 
-    if include and snippet:
-      src = read_snippet(include, snippet)
+    include      = kvs.get("include")
+    snippet      = kvs.get("snippet")
+    ignore_other = kvs.get("ignore-other-snippets")
+
+    if include:
+      src = read_snippet(include, snippet, ignore_other)
       return CodeBlock([ident, classes, keyvals], src)
 
 if __name__ == "__main__":
